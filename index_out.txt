@@ -1,0 +1,10 @@
+﻿.\.venv\Scripts\python.exe : INFO sentence_transformers.SentenceTransformer: Load pretrained SentenceTransformer: C:\Us
+ers\25580\Desktop\handfree\data\models\bge-small-zh-v1.5
+At line:1 char:309
++ ... NG="utf-8"; .\.venv\Scripts\python.exe -m memodoc.cli index data\demo ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (INFO sentence_t...e-small-zh-v1.5:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+INFO memodoc.embedder: embedding 模型从本地加载：C:\Users\25580\Desktop\handfree\data\models\bge-small-zh-v1.5
+{'doc': 'demo_doc', 'chunks': 19, 'mode': 'embedding'}

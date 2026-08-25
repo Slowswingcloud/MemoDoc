@@ -1,0 +1,17 @@
+.venv/
+.uvcache/
+.uvpython/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+uv.lock
+
+# 运行时数据（含本地向量库、会话、记忆、模型缓存）
+data/store/
+data/sessions/
+data/.hf/
+
+# 密钥
+.env
