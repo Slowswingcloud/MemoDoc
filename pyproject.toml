@@ -17,7 +17,10 @@ dependencies = [
     "pydantic>=2.7,<3",
     "pydantic-settings>=2.3,<3",
     "numpy>=1.26,<3",
+    "jieba>=0.42",
     "sentence-transformers>=3.0,<5",
+    # transformers 4.57 要求 tokenizers<=0.23.0；钉住上限防被 ragas/langchain 等升级破坏
+    "tokenizers>=0.22.0,<=0.23.0",
 ]
 
 [project.scripts]

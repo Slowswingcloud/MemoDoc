@@ -14,6 +14,11 @@ ROOT = Path(__file__).resolve().parents[2]
 # 让 HuggingFace 模型缓存落在项目内（可被环境变量覆盖）。
 os.environ.setdefault("HF_HOME", str(ROOT / "data" / ".hf"))
 
+# 本地回环地址直连、不走代理：否则 Gradio 启动自检（httpx 请求 127.0.0.1:7860）
+# 会被 HTTP_PROXY 劫持成 502 "Couldn't start the app"。
+os.environ.setdefault("NO_PROXY", "127.0.0.1,localhost")
+os.environ.setdefault("no_proxy", "127.0.0.1,localhost")
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -38,10 +43,21 @@ class Settings(BaseSettings):
     # 本地模型目录（`memodoc download-model` 下载到这里，加载时优先使用）
     model_dir: Path = ROOT / "data" / "models" / "bge-small-zh-v1.5"
 
+    # ---- Rerank（对齐 Kotaemon：候选重排）----
+    reranker_model: str = "BAAI/bge-reranker-v2-m3"
+    reranker_dir: Path = ROOT / "data" / "models" / "bge-reranker-v2-m3"
+    use_rerank: bool = True
+
     # ---- 检索 ----
     top_k: int = 4
     chunk_size: int = 500
     chunk_overlap: int = 80
+    # 混合检索：先召回更多候选，融合后交给重排器精排
+    retrieve_candidates: int = 20
+    # 混合融合权重：final = w * dense_norm + (1-w) * sparse_norm
+    hybrid_weight: float = 0.6
+    # 跨语言检索：中文查询自动翻译成英文，双语检索后融合（解决"中文问英文文档"）
+    enable_query_translation: bool = True
 
     # ---- 记忆 ----
     memory_top_k: int = 5
@@ -51,6 +67,12 @@ class Settings(BaseSettings):
     data_dir: Path = ROOT / "data"
     store_dir: Path = ROOT / "data" / "store"
     session_dir: Path = ROOT / "data" / "sessions"
+    upload_dir: Path = ROOT / "data" / "uploads"
+    # 逻辑空间：物理层按 租户/生命周期 归档文件；逻辑层保持扁平、用虚拟标签管理
+    default_tenant: str = "default"
+    default_lifecycle: str = "active"
+    # 索引时自动打标签（LLM 建议 + 启发式兜底；关闭后需手动打标签）
+    auto_tag_on_index: bool = True
 
     @property
     def llm_configured(self) -> bool:

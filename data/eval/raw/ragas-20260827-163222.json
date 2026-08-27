@@ -1,0 +1,124 @@
+{
+ "time": "2026-08-27 16:32:22",
+ "judge_llm": "deepseek-v4-flash",
+ "embeddings": "BAAI/bge-small-zh-v1.5",
+ "qa_demo": [
+  {
+   "user_input": "加入极客社需要满足哪些条件？",
+   "retrieved_contexts": [],
+   "response": "文档中没有相关信息。",
+   "reference": "本校在读学生优先，需参加入社面试并缴纳社费30元/学期。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.0,
+   "context_precision": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "每周例会在什么时间、什么地点？",
+   "retrieved_contexts": [],
+   "response": "文档中没有相关信息。",
+   "reference": "每周三晚19:00-21:00在主教学楼B201教室。",
+   "faithfulness": 0.0,
+   "answer_relevancy": 0.0,
+   "context_precision": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "无故缺席一次例会会被扣多少积分？",
+   "retrieved_contexts": [],
+   "response": "文档中没有相关信息。",
+   "reference": "无故缺席例会一次扣除3积分。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.0,
+   "context_precision": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "单次报销的金额上限是多少？",
+   "retrieved_contexts": [],
+   "response": "文档中没有相关信息。",
+   "reference": "单次报销金额上限200元，超过需提前向财务部申请。",
+   "faithfulness": 0.0,
+   "answer_relevancy": 0.0,
+   "context_precision": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "担任一次主题分享主讲能获得多少积分？",
+   "retrieved_contexts": [],
+   "response": "文档中没有相关信息。",
+   "reference": "担任主题分享主讲可获得10积分。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.0,
+   "context_precision": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "技术部主要负责哪些工作？",
+   "retrieved_contexts": [],
+   "response": "文档中没有相关信息。",
+   "reference": "技术培训课程设计、校内编程比赛组织、官网与内部系统维护。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.0,
+   "context_precision": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "退社时已经缴纳的社费可以退还吗？",
+   "retrieved_contexts": [],
+   "response": "文档中没有相关信息。",
+   "reference": "退社时已缴纳的当学期社费不予退还。",
+   "faithfulness": 0.0,
+   "answer_relevancy": 0.0,
+   "context_precision": 0.0,
+   "context_recall": 0.0
+  }
+ ],
+ "qa_paper": [
+  {
+   "user_input": "Agent-OS论文提出了什么架构模型？",
+   "retrieved_contexts": [
+    " agents talk to\neach other through structured messages (A2A-style), and all activities are traced\nin standard telemetry formats (OTel). If an interface changes, it is versioned so\nold agents continue to work. This guarantees portability, interoperability, and\nlong-term stability.\n4.2\nLayered Model\nThe proposed Agent-OS employs a five-layer architecture that parallels classi-\ncal operating systems while targeting agentic workloads, as illustrated in Fig-\nure 1. Following the principle that each l",
+    "8 September 2025\nAgent Operating Systems (Agent-OS): A Blueprint\nArchitecture for Real-Time, Secure, and Scalable AI\nAgents\nAnis Koubaa\n1\n1. Alfaisal University\nAbstract\nLarge-model (LM) agents are proliferating across domains, yet current systems remain ad-\nhoc pipelines without operating system (OS)-level guarantees for scheduling, memory, real-time\nresponsiveness, and end-to-end security. Today's agent architectures resemble the pre-OS era\nof computing-a chaos of duplicated solutions lacking ",
+    "ble traces—are not consistently\ntreated as kernel responsibilities, despite documented risks in agent ecosystems\n[3].\nContributions. This paper advances a generalized Agent Operating System\n(Agent-OS) that abstracts models + tools + environments + human-in-the-loop\n(HITL) orchestration. Specifically, we: (i) formalize a prioritized requirements\nbaseline spanning functional requirements (agent lifecycle; context/memory; tool\nand environment connectors; orchestration and multi-agent coordination; ",
+    "ompts, sources,\nand tool hashes are traceable for audits.\nWhy this helps. The contract acts like an “ABI for agents,” coupling real-time\nclass (HRT/SRT/DT) with concrete SLOs (deadlines, onset/turn, throughput)\nso the Agent-OS can prove schedulability up front and enforce class-specific poli-\ncies at runtime—while keeping behavior portable across vendors and clusters.\n4\nConceptual Architecture\nWe propose a layered architecture for an Agent Operating System (Agent-\nOS) that treats models, tools, "
+   ],
+   "response": "根据文档片段，Agent-OS 论文提出的是**五层架构模型（five-layer architecture）**，它类比经典操作系统，专门面向代理型工作负载（agentic workloads），并将模型、工具、环境等抽象为操作系统级资源进行统一管理。[1][4]",
+   "reference": "五层 Agent-OS 模型，需求驱动规范（FR/NFR，NFR7 实时性），Agent Contract 用于可移植性。",
+   "faithfulness": 0.8,
+   "answer_relevancy": 0.986589287513723,
+   "context_precision": 0.7499999999625,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "Agent-OS论文如何设计安全机制？",
+   "retrieved_contexts": [
+    "l”\ndesign for Agent-OS is paramount. This involves identifying the absolute\nminimal set of primitives for scheduling, policy enforcement, and context\nmanagement that must reside in the trusted core, pushing all other func-\ntionality to efficient, replaceable user-space services. The goal is to minimize\noverhead on the critical path while maximizing flexibility.\n2. Verifiable Safety and Security: Moving beyond best-effort security re-\nquires developing verifiable safety layers. This involves usin",
+    "s provides both pre-\ndictability for the system and portability for agents across deployments.\n4.1\nDesign Principles\nKeep the kernel minimal (microkernel). The secure “core” of the Agent-OS\nshould stay small and easy to audit. Only the essentials live in the kernel: check-\ning whether an agent can be admitted, scheduling according to latency class,\nmanaging minimal context, and enforcing policies. All richer services—such as\nmemory/RAG, tool use, model routing, agent-to-agent messaging, and tele",
+    "cation—whether on a device, in the cloud, or on a private\nserver—changes how it behaves. The Agent-OS is designed to manage agents\nacross three common setups, ensuring that performance, security, and privacy\nare always handled correctly.\nOn the Device (Edge-Only) This setup is for agents that need to be fast, private,\nand always available, even without an internet connection.\nEverything runs directly on the user’s device (e.g., phone or laptop). For\ninteractive tasks that require immediate respo",
+    "tions for resource management, isolation, and coordination. Ex-\nisting frameworks (e.g., tool-calling, Model Context Protocol, Agent-to-\nAgent messaging) address isolated aspects but lack a unified, security-\nby-design, latency-aware foundation suitable for enterprise and safety-\ncritical deployments. This paper introduces the conceptual Agent Op-\nerating System (Agent-OS) as a computational substrate for agentic\nworkflows. We present this not as a system fully realizable today, but as\nan archit"
+   ],
+   "response": "根据文档，Agent-OS 的安全机制设计主要包含以下几点：\n\n1. **最小化内核（微内核）**：将安全必需功能放在极小且易审计的内核中，包括：检查 agent 是否可被接纳（准入控制）、按延迟类别调度、管理最小上下文、以及强制执行策略 [2]。其他所有更丰富的服务（如内存/RAG、工具使用、模型路由等）都移出内核，放到用户空间 [2]。\n\n2. **可验证的安全与安全层**：论文强调超越“尽力而为”的安全，需要开发可验证的安全层（verifiable safety layers） [1]。这意味着安全机制不是靠事后补救，而是可形式化验证的。\n\n3. **安全-by-design 基础**：Agent-OS 被定位为面向企业级和安全关键型部署的统一、安全-by-design、延迟感知的基础设施，而非现有零散框架（如工具调用、MCP、A2A）的简单组合 [4]。\n\n综上，其核心思路是：**将安全关键操作收敛到最小可信内核，并辅以可验证的安全层，从架构上保证安全性**。",
+   "reference": "安全作为内核原语：RBAC 权限控制、能力限定的工具、加密内存、可审计追踪。",
+   "faithfulness": 0.8695652173913043,
+   "answer_relevancy": 0.8720113252474726,
+   "context_precision": 0.99999999995,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "Agent-OS论文的动机是什么？",
+   "retrieved_contexts": [
+    "ble traces—are not consistently\ntreated as kernel responsibilities, despite documented risks in agent ecosystems\n[3].\nContributions. This paper advances a generalized Agent Operating System\n(Agent-OS) that abstracts models + tools + environments + human-in-the-loop\n(HITL) orchestration. Specifically, we: (i) formalize a prioritized requirements\nbaseline spanning functional requirements (agent lifecycle; context/memory; tool\nand environment connectors; orchestration and multi-agent coordination; ",
+    "es resemble the pre-OS era\nof computing-a chaos of duplicated solutions lacking fundamental abstractions for resource\nmanagement, isolation, and coordination. Existing frameworks (e.g., tool-calling, Model Context\nProtocol, Agent-to-Agent messaging) address isolated aspects but lack a uniﬁed, securityby-\ndesign, latency-aware foundation suitable for enterprise and safetycritical deployments. This\npaper introduces the conceptual Agent Operating System (Agent-OS) as a computational substrate\nfor a",
+    "chitecture for an Agent Operating System (Agent-\nOS) that treats models, tools, environments, and human-in-the-loop (HITL) in-\nteractions as first-class, schedulable resources. The design is guided by two\ncomplementary goals: systems rigor and ecosystem portability.\nOn the systems side, Agent-OS adopts a microkernel-style control plane\nthat enforces real-time guarantees, admission control, and policy checks. Re-\nsponsiveness is explicitly managed through three latency classes—hard real-\ntime (HR",
+    "stics,\nand public services at scale. By grounding agent platforms in explicit require-\nments, time semantics, and security primitives, we aim to catalyze a transition\nfrom bespoke pipelines to interoperable, auditable, and scalable infrastructures\nsuitable for rigorous engineering and eventual standardization.\n2\nBackground and Related Work\nThe concept of Agent Operating Systems (Agent-OS), while gaining recent trac-\ntion due to the proliferation of Large Language Models (LLMs), draws from\ndecade"
+   ],
+   "response": "Agent-OS 论文的动机是：现有 Agent 框架（如 tool-calling、Model Context Protocol、Agent-to-Agent 消息传递）只解决孤立问题，缺乏统一、安全优先、低延迟的基础设施，导致类似“操作系统前时代”的重复造轮子和混乱状态，难以支撑企业级和安全关键型部署 [2]。同时，Agent 生态中存在已被记录的安全风险，但相关职责（如安全痕迹）未被一致地纳入内核责任范围 [1]，因此需要构建一个将模型、工具、环境和人在环路统一抽象为可调度资源的 Agent 操作系统。",
+   "reference": "当前 LM 代理系统缺乏操作系统级的调度、内存、实时响应与端到端安全保证。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 1.0,
+   "context_precision": 0.999999999975,
+   "context_recall": 1.0
+  }
+ ]
+}

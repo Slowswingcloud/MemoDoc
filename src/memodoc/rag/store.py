@@ -8,12 +8,64 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from pathlib import Path
 
 import numpy as np
 
 from memodoc.config import settings
 from memodoc.rag.chunker import Chunk
+
+
+class DocumentRegistry:
+    """文档注册表：doc_name → {source, chunks, indexed_at}，JSON 持久化（供文档库查看）。"""
+
+    def __init__(self, path: Path | None = None):
+        self.path = path or settings.store_dir / "documents.json"
+        self._data: dict = {}
+        self._load()
+
+    def _load(self) -> None:
+        if self.path.exists():
+            try:
+                self._data = json.loads(self.path.read_text(encoding="utf-8"))
+            except Exception:
+                self._data = {}
+
+    def _save(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text(json.dumps(self._data, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    def upsert(
+        self,
+        doc_name: str,
+        source: str,
+        chunks: int,
+        tenant: str = "default",
+        lifecycle: str = "active",
+        tags: list | None = None,
+    ) -> None:
+        self._data[doc_name] = {
+            "source": source,
+            "chunks": chunks,
+            "indexed_at": time.time(),
+            "tenant": tenant,
+            "lifecycle": lifecycle,
+            "tags": tags or [],
+        }
+        self._save()
+
+    def remove(self, doc_name: str) -> None:
+        self._data.pop(doc_name, None)
+        self._save()
+
+    def all(self) -> list[dict]:
+        out = []
+        for name, info in sorted(
+            self._data.items(), key=lambda kv: kv[1].get("indexed_at", 0), reverse=True
+        ):
+            out.append({"name": name, **info})
+        return out
 
 
 class JsonVectorStore:
@@ -26,11 +78,23 @@ class JsonVectorStore:
         self._load()
 
     def _load(self) -> None:
-        if self.path.exists():
-            try:
-                self._items = json.loads(self.path.read_text(encoding="utf-8"))
-            except Exception:
-                self._items = []
+        if not self.path.exists():
+            return
+        try:
+            self._items = json.loads(self.path.read_text(encoding="utf-8"))
+            # 旧数据迁移：补齐逻辑空间字段（tenant/lifecycle/tags），保持扁平可查
+            changed = False
+            for it in self._items:
+                meta = it.get("meta") or {}
+                for k, v in (("tenant", "default"), ("lifecycle", "active"), ("tags", [])):
+                    if k not in meta:
+                        meta[k] = v
+                        changed = True
+                it["meta"] = meta
+            if changed:
+                self._save()
+        except Exception:
+            self._items = []
 
     def _save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -66,13 +130,28 @@ class JsonVectorStore:
             ]
             self._save()
 
-    def query(self, embedding: list[float], top_k: int, where: dict | None = None) -> list[dict]:
+    def update_meta_where(self, fields: dict, where: dict) -> None:
+        """按 where 精确匹配，更新匹配项的 meta 字段（如改虚拟标签）。"""
+        with self._lock:
+            for it in self._items:
+                if all(it["meta"].get(k) == v for k, v in where.items()):
+                    it["meta"].update(fields)
+            self._save()
+
+    def query(
+        self,
+        embedding: list[float],
+        top_k: int,
+        where: dict | None = None,
+        tag_filter: list[str] | None = None,
+    ) -> list[dict]:
         emb = np.asarray(embedding, dtype="float32")
         rows = [
             it
             for it in self._items
             if it.get("embedding") is not None
             and (where is None or all(it["meta"].get(k) == v for k, v in where.items()))
+            and (tag_filter is None or any(t in (it["meta"].get("tags") or []) for t in tag_filter))
         ]
         if not rows:
             return []
@@ -89,11 +168,12 @@ class JsonVectorStore:
             for i in order
         ]
 
-    def all(self, where: dict | None = None) -> list[dict]:
+    def all(self, where: dict | None = None, tag_filter: list[str] | None = None) -> list[dict]:
         return [
             {"id": it["id"], "text": it["text"], "meta": it["meta"]}
             for it in self._items
-            if where is None or all(it["meta"].get(k) == v for k, v in where.items())
+            if (where is None or all(it["meta"].get(k) == v for k, v in where.items()))
+            and (tag_filter is None or any(t in (it["meta"].get("tags") or []) for t in tag_filter))
         ]
 
     def count(self, where: dict | None = None) -> int:
@@ -112,20 +192,57 @@ class VectorStore:
         self._store.add(
             ids=[c.id for c in chunks],
             texts=[c.text for c in chunks],
-            metas=[{"doc_name": c.doc_name, "section": c.section_path} for c in chunks],
+            metas=[
+                {"doc_name": c.doc_name, "section": c.section_path, **c.meta}
+                for c in chunks
+            ],
             embeddings=embeddings,
         )
 
     def delete_doc(self, doc_name: str) -> None:
         self._store.delete_where(doc_name=doc_name)
 
-    def query(self, embedding: list[float], top_k: int, doc_name: str | None = None) -> list[dict]:
-        where = {"doc_name": doc_name} if doc_name else None
-        return self._store.query(embedding, top_k, where)
+    def update_doc_tags(self, doc_name: str, tags: list[str]) -> None:
+        """更新某文档所有块的虚拟标签（逻辑层标签管理）。"""
+        self._store.update_meta_where({"tags": tags}, {"doc_name": doc_name})
 
-    def all_chunks(self, doc_name: str | None = None) -> list[dict]:
-        where = {"doc_name": doc_name} if doc_name else None
-        return self._store.all(where)
+    def update_doc_meta(self, doc_name: str, **fields) -> None:
+        """更新某文档所有块的任意 meta 字段（如 lifecycle）。"""
+        self._store.update_meta_where(fields, {"doc_name": doc_name})
+
+    def query(
+        self,
+        embedding: list[float],
+        top_k: int,
+        doc_name: str | None = None,
+        tenant: str | None = None,
+        lifecycle: str | None = None,
+        tags: list[str] | None = None,
+    ) -> list[dict]:
+        where: dict = {}
+        if doc_name:
+            where["doc_name"] = doc_name
+        if tenant:
+            where["tenant"] = tenant
+        if lifecycle:
+            where["lifecycle"] = lifecycle
+        return self._store.query(embedding, top_k, where or None, tags)
+
+    def all_chunks(
+        self,
+        doc_name: str | None = None,
+        tenant: str | None = None,
+        lifecycle: str | None = None,
+        tags: list[str] | None = None,
+    ) -> list[dict]:
+        where: dict = {}
+        if doc_name:
+            where["doc_name"] = doc_name
+        if tenant:
+            where["tenant"] = tenant
+        if lifecycle:
+            where["lifecycle"] = lifecycle
+        return self._store.all(where or None, tags)
 
     def indexed_docs(self) -> list[str]:
         docs = {it["meta"].get("doc_name") for it in self._store.all() if it["meta"].get("doc_name")}

@@ -1,0 +1,159 @@
+{
+ "time": "2026-08-27 14:53:17",
+ "judge_llm": "deepseek-v4-flash",
+ "embeddings": "BAAI/bge-small-zh-v1.5",
+ "qa_demo": [
+  {
+   "user_input": "加入极客社需要满足哪些条件？",
+   "retrieved_contexts": [
+    "极客社是校级科技创新类学生社团，成立于 2016 年，目前注册社员约 260 人。社团以\"动手、分享、创造\"为宗旨，面向全校各专业学生开放，专注于软件、硬件与人工智能方向的实践与交流。",
+    "1. 本校在读学生（本科、硕士均可），**大一、大二、大三学生优先**；\n2. 对技术有持续热情，愿意每周投入至少 3 小时参与社团活动；\n3. 参加并通过每学期初的**入社面试**（每人约 15 分钟）；\n4. 缴纳社费 **30 元/学期**，用于活动物料与设备维护。",
+    "提交报名表 → 参加面试 → 面试通过后 3 个工作日内缴纳社费 → 加入社团群并录入社员档案。",
+    "保证软件满足："
+   ],
+   "response": "根据文档，加入极客社需满足以下条件 [2]：\n\n1. 本校在读学生（本科、硕士均可），大一、大二、大三学生优先；\n2. 对技术有持续热情，愿意每周投入至少 3 小时参与社团活动；\n3. 参加并通过每学期初的入社面试（每人约 15 分钟）；\n4. 缴纳社费 30 元/学期。",
+   "reference": "本校在读学生优先，需参加入社面试并缴纳社费30元/学期。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.9999999999999998,
+   "context_precision": 0.5833333333041666,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "每周例会在什么时间、什么地点？",
+   "retrieved_contexts": [
+    "- 时间：**每周三晚 19:00–21:00**；\n- 地点：**主教学楼 B201 教室**；\n- 内容：上周总结、本周任务分配、技术主题分享。",
+    "每月第三周为例会中的主题分享环节，由社员自愿报名担任主讲。主讲人可获得积分奖励，具体积分见《积分制度》章节。",
+    "例会现场扫码签到，签到记录由技术部每周导出存档，作为积分核算依据。",
+    "检查。\n• Git 提交次数不能直接当作个人贡献大小。还要看任务难度、质量、测试、文档和协作。\n六、时间安排\n时间\n要完成的工作\n检查\n\n《软件工程基础实践》课程任务书\n第 5 页\n时间\n要完成的工作\n检查\n8 月25 日-8 月28 日\n启动原系统；补文档和测试；完成容器化与CI；确定\n微服务怎么拆。\n每天站会、看板和流\n水线记录\n8 月29 日（周六）\n正常上课，完成前5 天任务。\n中期检查\n8 月30 日（周日）\n不安排集中实践。\n-\n8 月31 日-9 月3 日\n完成微服务、自动部署、回归测试、扩缩容、故障处理\n和性能对比。\n每天站会、看板和实\n验记录\n9 月4 日14:00-17:00\n最终答辩和现场演示。\n最终验收\n\n8 月29 日中期检查要看到什么\n• 原系统能启动，确认后的业务场景（用例）清单中所有用例都能运行，并已打Git 标签。\n• 所有业务场景（用例）的需求、系统级图、组件级图、对象级图和追溯表已经完成。\n• 前端、后端、数据库容器能够启动。CI 能够自动完成构建和测试。\n• 微服务划分图、服务接口清单和数据表归属方案已经完成。\n未达到以上要求的组，在第6 天上午"
+   ],
+   "response": "每周例会时间为**每周三晚 19:00–21:00**，地点为**主教学楼 B201 教室**。[1]",
+   "reference": "每周三晚19:00-21:00在主教学楼B201教室。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.9617195009373823,
+   "context_precision": 0.9999999999,
+   "context_recall": 1.0
+  },
+  {
+   "user_input": "无故缺席一次例会会被扣多少积分？",
+   "retrieved_contexts": [
+    "1. 无法参加例会或活动时，须**提前 24 小时**向所在部门部长报备；\n2. 每人每月请假**最多 2 次**；\n3. 无故缺席例会一次，扣除 **3 积分**；连续三次无故缺席，由部长约谈并记入社团档案。",
+    "例会现场扫码签到，签到记录由技术部每周导出存档，作为积分核算依据。",
+    "。\n• 一般情况下，个人权重在0.9 到1.1 之间。经教师和助教核实，特殊情况可低至0.5。组长不会因\n为是组长自动加权。\n• 全组权重之和不能超过组员人数。\n• 权重方案原则上由全员签字或线上确认。意见不一致时，先按1.0 计算，再由教师和助教根据看\n板、提交、评审、站会和答辩情况决定。\n考勤（10 分）\n• 每天上午、下午各考勤1 次，共20 次，考勤时间不固定。\n• 普通日期未请假缺勤，前2 次不扣分，从第3 次起每次扣1 分。第1 天上午和第10 天下午是关\n键考勤，每缺勤1 次直接扣1 分。\n• 迟到或早退不超过30 分钟记1 次，累计2 次折合1 次缺勤；超过30 分钟按1 次缺勤。临时离开\n机房要报备。\n\n《软件工程基础实践》课程任务书\n第 8 页\n• 病假、事假按学校和课程要求办理请假。是否安排补验由教师决定。\n十一、AI 工具和学术诚信\n• 可以使用生成式AI 讨论方案、辅助写代码、生成测试、排查错误和修改文字。组员必须检查并\n实际运行，不能把AI 输出直接当成正确答案。\n• 技术总结报告中简要写明用了什么工具、用来做什么、怎样人工检查。\n• 引用开源代码、模板、数",
+    "| 项目 | 积分 |\n| --- | --- |\n| 参加例会 | +2 |\n| 担任主题分享主讲 | +10 |\n| 组织一次社团活动 | +15 |\n| 黑客松优胜 | +20 |\n| 技术文章投稿并被采用 | +5 |"
+   ],
+   "response": "无故缺席一次例会扣除 **3 积分**。[1]",
+   "reference": "无故缺席例会一次扣除3积分。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.983093177331553,
+   "context_precision": 0.9999999999,
+   "context_recall": 1.0
+  },
+  {
+   "user_input": "单次报销的金额上限是多少？",
+   "retrieved_contexts": [
+    "- 单次报销金额**上限 200 元**；\n- 超过 200 元的支出须**提前向财务部申请**，获批后方可采购；\n- 未获批的超额支出不予报销。",
+    "d > Tmax]}. Here,\nNrounds denotes the number of interaction rounds,\nNmax is the maximum allowed rounds, Tused repre-\nsents the total token usage, and Tmax is the token\nbudget limit. The penalty coefficients are set to\nProunds = −1 and Poverflow = −0.5 by default.\nA.3\nAgeMem Algorithm\nThis section provides the complete algorithmic\nspecification of AgeMem, our unified memory\n21473\n\nmanagement framework for LLM-based agents.\nThe training procedure integrates three progres-\nsive stages (long-term me",
+    " β is set to 0.1.\nReward weights. All reward weights are set to 1/3:\nwtask = wcontext = wmemory = 1/3. This uniform\nweighting ensures that all components contribute\nequally to the learning signal, allowing the agent\nto naturally balance task performance and memory\nmanagement.\nModel settings. The maximum context length is\nset to 8,192 tokens, and the maximum response\nlength is set to 2,048 tokens. When the context\nexceeds this limit, the agent receives a penalty, en-\ncouraging proactive use of ST",
+    "n the\nmissing evidence appears only in Ht.\nTable 13 reports the final SFT coverage. Each target\ncontributes 4,000 training examples and 500 development\nexamples.\nSFT uses AdamW for three epochs with a learning rate\nof 2 × 10−5, a warmup ratio of 0.03, a maximum gradient\nnorm of 1.0, and an effective batch size of 64. The policy-\nstate serialization limit is 8,192 tokens. The configured\nprotocol determines the target-operation output limit.\nThe loss is applied only to the tokens that serialize th"
+   ],
+   "response": "单次报销金额上限为 **200 元** [1]。",
+   "reference": "单次报销金额上限200元，超过需提前向财务部申请。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.9967474205887938,
+   "context_precision": 0.9999999999,
+   "context_recall": 1.0
+  },
+  {
+   "user_input": "担任一次主题分享主讲能获得多少积分？",
+   "retrieved_contexts": [
+    "每月第三周为例会中的主题分享环节，由社员自愿报名担任主讲。主讲人可获得积分奖励，具体积分见《积分制度》章节。",
+    "| 项目 | 积分 |\n| --- | --- |\n| 参加例会 | +2 |\n| 担任主题分享主讲 | +10 |\n| 组织一次社团活动 | +15 |\n| 黑客松优胜 | +20 |\n| 技术文章投稿并被采用 | +5 |",
+    "例会现场扫码签到，签到记录由技术部每周导出存档，作为积分核算依据。",
+    "每学期举办一次 24 小时黑客松，自由组队（2–4 人），主题由技术部提前两周公布。优胜队伍成员各获 20 积分，并优先获得校企合作实习内推机会。"
+   ],
+   "response": "担任一次主题分享主讲可获得 10 积分。[2]",
+   "reference": "担任主题分享主讲可获得10积分。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.9958154673469062,
+   "context_precision": 0.49999999995,
+   "context_recall": 1.0
+  },
+  {
+   "user_input": "技术部主要负责哪些工作？",
+   "retrieved_contexts": [
+    "| 成员  | 角色                | 主要负责内容                                             | 工作方式 |\n| --- | ----------------- | -------------------------------------------------- | ---- |\n| 范文歆 | 组长、架构与 DevOps 负责人 | 项目统筹、任务看板、单体基线、服务划分、API 网关、CI/CD、Kubernetes、现场环境集成 | 线下为主 |\n| 李璐曼 | 课程服务与数据库负责人       | 课程、选课、公告、资料、数据库迁移、种子数据、课程服务拆分                      | 线下为主 |\n| 闾玥  | 作业成绩服务负责人         | 作业发布与提交、批改、迟交、重做、成绩汇总、跨服务故障处理                      | 线下为主 |\n| 吴本昭 | 实验练习服务与测试负责人      | 实验集、代码评测 Worker、练习、讨论、API 回归、性能测",
+    "负责技术培训课程设计、校内编程比赛组织、社团官网与内部系统维护。",
+    "负责企业走访、赞助洽谈、兄弟社团交流，以及实习内推资源的对接。",
+    "社团设社长 1 名、副社长 2 名，下设四个部门：\n- 技术部\n- 宣传部\n- 外联部\n- 财务部"
+   ],
+   "response": "技术部主要负责技术培训课程设计、校内编程比赛组织、社团官网与内部系统维护。[2]",
+   "reference": "技术培训课程设计、校内编程比赛组织、官网与内部系统维护。",
+   "faithfulness": 0.0,
+   "answer_relevancy": 0.949965912693837,
+   "context_precision": 0.49999999995,
+   "context_recall": 1.0
+  },
+  {
+   "user_input": "退社时已经缴纳的社费可以退还吗？",
+   "retrieved_contexts": [
+    "社员可随时申请退社：向所在部门部长提交书面申请，经部长确认后即可办理。已缴纳的当学期社费**不予退还**。连续两个学期未参加任何活动且未请假者，视为自动退社。",
+    "负责社费收缴、经费预算编制、报销审核与社团财务公开。",
+    "1. 保留正规发票；\n2. 将发票与用途说明提交给**财务部**；\n3. 财务部审核通过后，由部长签字确认；\n4. 报销款在审核通过后 **5 个工作日**内到账。",
+    "提交报名表 → 参加面试 → 面试通过后 3 个工作日内缴纳社费 → 加入社团群并录入社员档案。"
+   ],
+   "response": "不可以。根据运营手册，已缴纳的当学期社费不予退还 [1]。",
+   "reference": "退社时已缴纳的当学期社费不予退还。",
+   "faithfulness": 0.5,
+   "answer_relevancy": 0.898183739364447,
+   "context_precision": 0.9999999999,
+   "context_recall": 1.0
+  }
+ ],
+ "qa_paper": [
+  {
+   "user_input": "Agent-OS论文提出了什么架构模型？",
+   "retrieved_contexts": [
+    " agents talk to\neach other through structured messages (A2A-style), and all activities are traced\nin standard telemetry formats (OTel). If an interface changes, it is versioned so\nold agents continue to work. This guarantees portability, interoperability, and\nlong-term stability.\n4.2\nLayered Model\nThe proposed Agent-OS employs a five-layer architecture that parallels classi-\ncal operating systems while targeting agentic workloads, as illustrated in Fig-\nure 1. Following the principle that each l",
+    "8 September 2025\nAgent Operating Systems (Agent-OS): A Blueprint\nArchitecture for Real-Time, Secure, and Scalable AI\nAgents\nAnis Koubaa\n1\n1. Alfaisal University\nAbstract\nLarge-model (LM) agents are proliferating across domains, yet current systems remain ad-\nhoc pipelines without operating system (OS)-level guarantees for scheduling, memory, real-time\nresponsiveness, and end-to-end security. Today's agent architectures resemble the pre-OS era\nof computing-a chaos of duplicated solutions lacking ",
+    "ble traces—are not consistently\ntreated as kernel responsibilities, despite documented risks in agent ecosystems\n[3].\nContributions. This paper advances a generalized Agent Operating System\n(Agent-OS) that abstracts models + tools + environments + human-in-the-loop\n(HITL) orchestration. Specifically, we: (i) formalize a prioritized requirements\nbaseline spanning functional requirements (agent lifecycle; context/memory; tool\nand environment connectors; orchestration and multi-agent coordination; ",
+    "ompts, sources,\nand tool hashes are traceable for audits.\nWhy this helps. The contract acts like an “ABI for agents,” coupling real-time\nclass (HRT/SRT/DT) with concrete SLOs (deadlines, onset/turn, throughput)\nso the Agent-OS can prove schedulability up front and enforce class-specific poli-\ncies at runtime—while keeping behavior portable across vendors and clusters.\n4\nConceptual Architecture\nWe propose a layered architecture for an Agent Operating System (Agent-\nOS) that treats models, tools, "
+   ],
+   "response": "根据文档片段，Agent-OS 提出了一个**五层架构（five-layer architecture）**，该架构与经典操作系统类似，但面向智能体（agentic）工作负载设计 [1]。\n\n不过，文档片段中未具体列出这五层的名称和职责。",
+   "reference": "五层 Agent-OS 模型，需求驱动规范（FR/NFR，NFR7 实时性），Agent Contract 用于可移植性。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 0.0,
+   "context_precision": 0.7499999999625,
+   "context_recall": 0.6666666666666666
+  },
+  {
+   "user_input": "Agent-OS论文如何设计安全机制？",
+   "retrieved_contexts": [
+    "l”\ndesign for Agent-OS is paramount. This involves identifying the absolute\nminimal set of primitives for scheduling, policy enforcement, and context\nmanagement that must reside in the trusted core, pushing all other func-\ntionality to efficient, replaceable user-space services. The goal is to minimize\noverhead on the critical path while maximizing flexibility.\n2. Verifiable Safety and Security: Moving beyond best-effort security re-\nquires developing verifiable safety layers. This involves usin",
+    "s provides both pre-\ndictability for the system and portability for agents across deployments.\n4.1\nDesign Principles\nKeep the kernel minimal (microkernel). The secure “core” of the Agent-OS\nshould stay small and easy to audit. Only the essentials live in the kernel: check-\ning whether an agent can be admitted, scheduling according to latency class,\nmanaging minimal context, and enforcing policies. All richer services—such as\nmemory/RAG, tool use, model routing, agent-to-agent messaging, and tele",
+    "cation—whether on a device, in the cloud, or on a private\nserver—changes how it behaves. The Agent-OS is designed to manage agents\nacross three common setups, ensuring that performance, security, and privacy\nare always handled correctly.\nOn the Device (Edge-Only) This setup is for agents that need to be fast, private,\nand always available, even without an internet connection.\nEverything runs directly on the user’s device (e.g., phone or laptop). For\ninteractive tasks that require immediate respo",
+    "tions for resource management, isolation, and coordination. Ex-\nisting frameworks (e.g., tool-calling, Model Context Protocol, Agent-to-\nAgent messaging) address isolated aspects but lack a unified, security-\nby-design, latency-aware foundation suitable for enterprise and safety-\ncritical deployments. This paper introduces the conceptual Agent Op-\nerating System (Agent-OS) as a computational substrate for agentic\nworkflows. We present this not as a system fully realizable today, but as\nan archit"
+   ],
+   "response": "Agent-OS 的安全机制设计以“最小可信内核 + 用户空间服务 + 可验证安全层”为核心，强调安全 by-design。\n\n具体设计要点如下：\n\n- **内核最小化（微内核）**：安全核心必须小且易于审计，内核中只保留必要功能，包括检查 agent 是否可被接纳、按延迟类别调度、管理最小上下文、执行策略 [2]。\n- **可信原语最小集合**：调度、策略执行、上下文管理等原语作为可信核心的最小集合，其余功能（如 RAG、工具调用、agent 间消息等）下沉到可替换的用户空间服务，以最小化关键路径开销并提高灵活性 [1]。\n- **可验证安全层**：超越“尽力而为”的安全，需要开发可验证的安全层 [1]。\n- **跨部署环境的安全与隐私**：针对设备端、云端、私有服务器等不同部署方式，Agent-OS 统一管理，确保性能、安全、隐私得到正确处理 [3]。\n- **安全 by-design 的统一基础**：现有框架只解决孤立问题，缺少统一、安全 by-design、延迟感知的基础，Agent-OS 正是为了补足这一缺憾 [4]。",
+   "reference": "安全作为内核原语：RBAC 权限控制、能力限定的工具、加密内存、可审计追踪。",
+   "faithfulness": NaN,
+   "answer_relevancy": 0.8955769894835718,
+   "context_precision": 0.99999999995,
+   "context_recall": 0.0
+  },
+  {
+   "user_input": "Agent-OS论文的动机是什么？",
+   "retrieved_contexts": [
+    "ble traces—are not consistently\ntreated as kernel responsibilities, despite documented risks in agent ecosystems\n[3].\nContributions. This paper advances a generalized Agent Operating System\n(Agent-OS) that abstracts models + tools + environments + human-in-the-loop\n(HITL) orchestration. Specifically, we: (i) formalize a prioritized requirements\nbaseline spanning functional requirements (agent lifecycle; context/memory; tool\nand environment connectors; orchestration and multi-agent coordination; ",
+    "es resemble the pre-OS era\nof computing-a chaos of duplicated solutions lacking fundamental abstractions for resource\nmanagement, isolation, and coordination. Existing frameworks (e.g., tool-calling, Model Context\nProtocol, Agent-to-Agent messaging) address isolated aspects but lack a uniﬁed, securityby-\ndesign, latency-aware foundation suitable for enterprise and safetycritical deployments. This\npaper introduces the conceptual Agent Operating System (Agent-OS) as a computational substrate\nfor a",
+    "chitecture for an Agent Operating System (Agent-\nOS) that treats models, tools, environments, and human-in-the-loop (HITL) in-\nteractions as first-class, schedulable resources. The design is guided by two\ncomplementary goals: systems rigor and ecosystem portability.\nOn the systems side, Agent-OS adopts a microkernel-style control plane\nthat enforces real-time guarantees, admission control, and policy checks. Re-\nsponsiveness is explicitly managed through three latency classes—hard real-\ntime (HR",
+    "stics,\nand public services at scale. By grounding agent platforms in explicit require-\nments, time semantics, and security primitives, we aim to catalyze a transition\nfrom bespoke pipelines to interoperable, auditable, and scalable infrastructures\nsuitable for rigorous engineering and eventual standardization.\n2\nBackground and Related Work\nThe concept of Agent Operating Systems (Agent-OS), while gaining recent trac-\ntion due to the proliferation of Large Language Models (LLMs), draws from\ndecade"
+   ],
+   "response": "Agent-OS 论文的动机是：当前 AI Agent 生态系统类似操作系统出现前的计算时代——存在大量重复性解决方案，缺乏资源管理、隔离与协调等基本抽象；而现有框架（如工具调用、MCP、Agent-to-Agent 消息）只解决孤立问题，缺少统一、安全设计且具备延迟感知能力的基础设施，难以满足企业级和安全关键型部署需求 [2]。因此提出 Agent-OS 作为统一的计算基底。",
+   "reference": "当前 LM 代理系统缺乏操作系统级的调度、内存、实时响应与端到端安全保证。",
+   "faithfulness": 1.0,
+   "answer_relevancy": 1.0,
+   "context_precision": 0.9166666666361111,
+   "context_recall": 1.0
+  }
+ ]
+}
