@@ -49,15 +49,18 @@ class Settings(BaseSettings):
     use_rerank: bool = True
 
     # ---- 检索 ----
-    top_k: int = 4
-    chunk_size: int = 500
-    chunk_overlap: int = 80
+    top_k: int = 6  # 对齐 Kotaemon：更大上下文，缓解长文档/论文单跳召回不足
+    chunk_size: int = 900  # 对齐 Kotaemon（1024）：避免 500 字把摘要/段落劈开
+    chunk_overlap: int = 180  # 对齐 Kotaemon（256 量级）：跨块语义不丢失
     # 混合检索：先召回更多候选，融合后交给重排器精排
-    retrieve_candidates: int = 20
+    retrieve_candidates: int = 30
     # 混合融合权重：final = w * dense_norm + (1-w) * sparse_norm
     hybrid_weight: float = 0.6
     # 跨语言检索：中文查询自动翻译成英文，双语检索后融合（解决"中文问英文文档"）
     enable_query_translation: bool = True
+    # LLM 重排（Kotaemon LLMScoring 思路）：cross-encoder 之后对 top-8 再做一次 LLM 打分。
+    # 更稳但每问多几次 LLM 调用，默认关闭，按需开启。
+    use_llm_rerank: bool = False
 
     # ---- 记忆 ----
     memory_top_k: int = 5

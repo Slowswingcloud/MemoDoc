@@ -1,0 +1,52 @@
+Date : 2026-08-29 10:48:52
+Directory : c:\Users\25580\Desktop\handfree
+Total : 15 files,  3419 codes, 12 comments, 2381 blanks, all 5812 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Markdown |          6 |      3,231 |          0 |      2,380 |      5,611 |
+| JSON     |          1 |        124 |          0 |          0 |        124 |
+| Python   |          8 |         64 |         12 |          1 |         77 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                     | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                        |         15 |      3,419 |         12 |      2,381 |      5,812 |
+| data                                                                     |          7 |      3,355 |          0 |      2,380 |      5,735 |
+| data\eval                                                                |          1 |        124 |          0 |          0 |        124 |
+| data\eval\raw                                                            |          1 |        124 |          0 |          0 |        124 |
+| data\uploads                                                             |          6 |      3,231 |          0 |      2,380 |      5,611 |
+| data\uploads\default                                                     |          6 |      3,231 |          0 |      2,380 |      5,611 |
+| data\uploads\default\active                                              |          6 |      3,231 |          0 |      2,380 |      5,611 |
+| src                                                                      |          5 |         49 |         13 |          3 |         65 |
+| src\memodoc                                                              |          5 |         49 |         13 |          3 |         65 |
+| src\memodoc (Files)                                                      |          2 |          9 |          2 |          1 |         12 |
+| src\memodoc\rag                                                          |          3 |         40 |         11 |          2 |         53 |
+| tests                                                                    |          3 |         15 |         -1 |         -2 |         12 |
++--------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                 | language | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| c:\Users\25580\Desktop\handfree\data\eval\raw\ragas-20260828-151239.json | JSON     |        124 |          0 |          0 |        124 |
+| c:\Users\25580\Desktop\handfree\data\uploads\default\active\0知识点检索表.md   | Markdown |        600 |          0 |         63 |        663 |
+| c:\Users\25580\Desktop\handfree\data\uploads\default\active\2软件与软件工程.md  | Markdown |        482 |          0 |        446 |        928 |
+| c:\Users\25580\Desktop\handfree\data\uploads\default\active\3软件过程管理.md   | Markdown |        893 |          0 |        824 |      1,717 |
+| c:\Users\25580\Desktop\handfree\data\uploads\default\active\4需求分析.md     | Markdown |        601 |          0 |        548 |      1,149 |
+| c:\Users\25580\Desktop\handfree\data\uploads\default\active\5软件概要设计.md   | Markdown |        524 |          0 |        461 |        985 |
+| c:\Users\25580\Desktop\handfree\data\uploads\default\active\小学期任务分工.md   | Markdown |        131 |          0 |         38 |        169 |
+| c:\Users\25580\Desktop\handfree\src\memodoc\cli.py                       | Python   |          8 |          0 |          1 |          9 |
+| c:\Users\25580\Desktop\handfree\src\memodoc\config.py                    | Python   |          1 |          2 |          0 |          3 |
+| c:\Users\25580\Desktop\handfree\src\memodoc\rag\chunker.py               | Python   |          3 |          2 |          0 |          5 |
+| c:\Users\25580\Desktop\handfree\src\memodoc\rag\parser.py                | Python   |         10 |          7 |          1 |         18 |
+| c:\Users\25580\Desktop\handfree\src\memodoc\rag\retriever.py             | Python   |         27 |          2 |          1 |         30 |
+| c:\Users\25580\Desktop\handfree\tests\eval_papers.py                     | Python   |          2 |          0 |          0 |          2 |
+| c:\Users\25580\Desktop\handfree\tests\eval_ragas.py                      | Python   |          3 |          0 |          0 |          3 |
+| c:\Users\25580\Desktop\handfree\tests\eval_softeng.py                    | Python   |         10 |         -1 |         -2 |          7 |
+| Total                                                                    |          |      3,419 |         12 |      2,381 |      5,812 |
++--------------------------------------------------------------------------+----------+------------+------------+------------+------------+

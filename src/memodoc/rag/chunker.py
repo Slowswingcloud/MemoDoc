@@ -27,10 +27,15 @@ def chunk_text(
     idx = 0
     for section_path, block_text in blocks:
         for seg in _windows(block_text, chunk_size, overlap):
+            # 章节路径拼进文本：标题关键词不再丢失（否则"非功能性需求"这类
+            # 只在标题出现的词，BM25/向量都检索不到该块）
+            text = seg
+            if section_path and section_path != "正文":
+                text = f"{section_path}\n{seg}"
             chunks.append(
                 Chunk(
                     id=f"{doc_name}#{idx:03d}",
-                    text=seg,
+                    text=text,
                     doc_name=doc_name,
                     section_path=section_path,
                     meta={"section": section_path},
@@ -55,10 +60,18 @@ def _split_by_headings(text: str) -> list[tuple[str, str]]:
     for line in lines:
         m = _HEADING_RE.match(line)
         if m:
-            flush()
             level = len(m.group(1))
             title = m.group(2).strip()
-            cur_path = (cur_path[: level - 1] + [title])[:3]
+            if level <= 3:
+                # 1-3 级标题：切块边界
+                flush()
+                cur_path = (cur_path[: level - 1] + [title])[:3]
+            else:
+                # 4 级+标题（如 "#### 功能内聚"）并入当前块正文：
+                # 避免"列表项标题+一行说明"被切成孤立小块，导致列表末尾项（功能内聚/内容耦合）
+                # 排在 top-k 之外、回答漏项
+                if line.strip() or cur_lines:
+                    cur_lines.append(title)
         else:
             if line.strip() or cur_lines:
                 cur_lines.append(line)

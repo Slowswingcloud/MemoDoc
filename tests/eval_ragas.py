@@ -85,6 +85,9 @@ def _print_scores(label: str, df) -> None:
 def _collect(pipe: Pipeline, qa: list[dict], session: str) -> list[dict]:
     rows = []
     for item in qa:
+        tags = item.get("tags")
+        if tags and not pipe.vector_store.all_chunks(tags=tags):
+            print(f"  ⚠ 标签 {tags} 内没有文档块——请先执行：memodoc tag <文档名> {' '.join(tags)}")
         retrieved = pipe.retriever.retrieve(item["q"], top_k=4, tags=item.get("tags"))
         ans = pipe.answer(session, item["q"], retrieved=retrieved)
         rows.append(

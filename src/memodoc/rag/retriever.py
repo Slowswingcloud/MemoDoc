@@ -80,9 +80,39 @@ class Retriever:
             candidates = self.reranker.rerank(query, candidates, top_k)
         else:
             candidates = candidates[:top_k]
+        # LLM 重排（Kotaemon LLMScoring 思路）：cross-encoder 之后再让 LLM 精排 top-8
+        if settings.use_llm_rerank and candidates:
+            candidates = self._llm_rerank(query, candidates, top_k)
         for i, r in enumerate(candidates, 1):
             r.index = i
         return candidates
+
+    def _llm_rerank(self, query: str, candidates: list[Retrieved], top_k: int) -> list[Retrieved]:
+        """用 LLM 对候选片段按相关性排序（跨语言场景比 cross-encoder 更稳，代价是多次 LLM 调用）。"""
+        if not self.llm.configured:
+            return candidates[:top_k]
+        cands = candidates[: max(top_k * 2, 8)]
+        body = "\n".join(f"[{i + 1}] {c.text[:200]}" for i, c in enumerate(cands))
+        prompt = (
+            "根据查询的相关性，把以下文档片段从最相关到最不相关排序。"
+            "只输出片段编号数组（如 [3,1,2]），不要解释。\n\n"
+            f"查询：{query}\n\n{body}"
+        )
+        try:
+            data = self.llm.chat_json([{"role": "user", "content": prompt}])
+        except Exception:
+            return candidates[:top_k]
+        if not isinstance(data, list) or not data:
+            return candidates[:top_k]
+        order = [int(x) for x in data if str(x).lstrip("-").isdigit()]
+        seen = set()
+        ordered: list[Retrieved] = []
+        for idx in order:
+            if 1 <= idx <= len(cands) and idx not in seen:
+                seen.add(idx)
+                ordered.append(cands[idx - 1])
+        ordered += [c for i, c in enumerate(cands, 1) if i not in seen]
+        return ordered[:top_k]
 
     def _retrieve_variants(
         self,

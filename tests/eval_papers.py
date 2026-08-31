@@ -67,6 +67,7 @@ def _chunk_hit(retrieved, gold_kw: list[str]) -> list[int]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="MemoDoc 论文评测（跨语言 + 路由 + 三档对比）")
     parser.add_argument("--tags", nargs="*", default=["论文"], help="标签范围（默认：论文）")
+    parser.add_argument("--top-k", type=int, default=6, help="recall 的 k（默认 6，对齐新检索参数）")
     args = parser.parse_args()
 
     pipe = Pipeline()
@@ -86,13 +87,13 @@ def main() -> None:
         route = pipe.retriever._route_doc(item["paper"])
 
         dense_hit = _chunk_hit(
-            pipe.retriever._dense(q, 4, doc_name=route, tags=args.tags), item["gold_kw"]
+            pipe.retriever._dense(q, args.top_k, doc_name=route, tags=args.tags), item["gold_kw"]
         )
         hybrid_hit = _chunk_hit(
-            pipe.retriever.retrieve(q, top_k=4, use_rerank=False, doc_name=route, tags=args.tags),
+            pipe.retriever.retrieve(q, top_k=args.top_k, use_rerank=False, doc_name=route, tags=args.tags),
             item["gold_kw"],
         )
-        final_retrieved = pipe.retriever.retrieve(q, top_k=4, doc_name=route, tags=args.tags)
+        final_retrieved = pipe.retriever.retrieve(q, top_k=args.top_k, doc_name=route, tags=args.tags)
         final_hit = _chunk_hit(final_retrieved, item["gold_kw"])
         rec["dense"] += bool(dense_hit)
         rec["hybrid"] += bool(hybrid_hit)
@@ -125,9 +126,10 @@ def main() -> None:
         print(f"    回答: {ans.strip()[:110]}")
 
     print("=" * 84)
-    print(f"recall@4 纯向量        : {rec['dense']}/{n} = {rec['dense']/n:.0%}")
-    print(f"recall@4 混合(BM25+向量): {rec['hybrid']}/{n} = {rec['hybrid']/n:.0%}")
-    print(f"recall@4 混合+重排     : {rec['final']}/{n} = {rec['final']/n:.0%}")
+    k = args.top_k
+    print(f"recall@{k} 纯向量        : {rec['dense']}/{n} = {rec['dense']/n:.0%}")
+    print(f"recall@{k} 混合(BM25+向量): {rec['hybrid']}/{n} = {rec['hybrid']/n:.0%}")
+    print(f"recall@{k} 混合+重排     : {rec['final']}/{n} = {rec['final']/n:.0%}")
     print(f"引用准确率             : {cite_hits}/{n} = {cite_hits/n:.0%}")
     print(f"答案关键词覆盖         : {kw_hits}/{n} = {kw_hits/n:.0%}")
     print(f"引用核查通过率         : {check_pass}/{check_n} = {check_pass/max(check_n, 1):.0%}")

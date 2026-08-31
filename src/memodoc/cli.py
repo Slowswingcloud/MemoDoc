@@ -26,6 +26,9 @@ def main(argv=None) -> None:
     p_auto = sub.add_parser("autotag", help="自动给文档打标签（缺省参数则全部文档）")
     p_auto.add_argument("doc_name", nargs="?", default=None)
 
+    p_re = sub.add_parser("reindex", help="按注册表源路径重新索引（缺省参数则全部；改分块/解析参数后用）")
+    p_re.add_argument("doc_name", nargs="?", default=None)
+
     p_ask = sub.add_parser("ask", help="提问（非流式）")
     p_ask.add_argument("question")
     p_ask.add_argument("--session", default="cli")
@@ -77,6 +80,12 @@ def main(argv=None) -> None:
         else:
             for d in pipe.documents():
                 print(f"《{d['name']}》→ {pipe.auto_tag(d['name'])}")
+    elif args.cmd == "reindex":
+        if args.doc_name:
+            print(pipe.reindex(args.doc_name))
+        else:
+            for d in pipe.documents():
+                print(pipe.reindex(d["name"]))
     elif args.cmd == "memories":
         for f in pipe.list_memories():
             print(f"- [{f['meta'].get('type')}] {f['content']}")
