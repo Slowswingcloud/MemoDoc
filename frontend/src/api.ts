@@ -4,61 +4,96 @@ import type {
   CheckStatus,
   DocItem,
   MemoryFact,
-  ProfileItem,
   Session,
   SourceItem,
-  StatItem,
   SSEEvent,
   UploadResult,
+  User,
 } from './types'
 
+let _token: string | null = null
+export function setToken(t: string | null): void {
+  _token = t
+}
+export function getToken(): string | null {
+  return _token
+}
+
+function headers(json?: unknown): HeadersInit {
+  const h: Record<string, string> = {}
+  if (_token) h.Authorization = `Bearer ${_token}`
+  if (json !== undefined) h['Content-Type'] = 'application/json'
+  return h
+}
+
 async function j<T>(method: string, url: string, body?: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method,
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  if (!res.ok) throw new Error(`${method} ${url} -> ${res.status}`)
+  const res = await fetch(url, { method, headers: headers(body), body: body ? JSON.stringify(body) : undefined })
+  if (!res.ok) {
+    let detail = `${res.status}`
+    try {
+      const e = await res.json()
+      if (e.detail) detail = e.detail
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail)
+  }
   return res.json() as Promise<T>
 }
 
 export const api = {
-  sessions: (role: string): Promise<Session[]> => j('GET', `/api/sessions?role=${role}`),
-  newSession: (role: string): Promise<{ session_id: string }> =>
-    j('POST', `/api/sessions?role=${role}`),
+  // ---- 认证 ----
+  register: (username: string, password: string, role: string): Promise<User> =>
+    j('POST', '/api/auth/register', { username, password, role }),
+  login: (username: string, password: string): Promise<{ token: string; username: string; role: string }> =>
+    j('POST', '/api/auth/login', { username, password }),
+  logout: (): Promise<{ ok: boolean }> => j('POST', '/api/auth/logout', {}),
+  me: (): Promise<User> => j('GET', '/api/me'),
+  users: (): Promise<{ username: string; role: string; created_at: number }[]> =>
+    j('GET', '/api/users'),
+
+  // ---- 会话 ----
+  sessions: (): Promise<Session[]> => j('GET', '/api/sessions'),
+  newSession: (): Promise<{ session_id: string }> => j('POST', '/api/sessions'),
   sessionMessages: (sid: string): Promise<{ messages: ChatMessage[] }> =>
     j('GET', `/api/sessions/${sid}`),
   deleteSession: (sid: string): Promise<{ ok: boolean }> => j('DELETE', `/api/sessions/${sid}`),
 
-  memories: (userId: string): Promise<MemoryFact[]> =>
-    j('GET', `/api/memories?user_id=${encodeURIComponent(userId)}`),
-  clearMemories: (userId: string): Promise<{ ok: boolean }> =>
-    j('DELETE', `/api/memories?user_id=${encodeURIComponent(userId)}`),
-  profile: (userId: string): Promise<ProfileItem[]> =>
-    j('GET', `/api/profile?user_id=${encodeURIComponent(userId)}`),
-  stats: (): Promise<StatItem[]> => j('GET', '/api/stats'),
+  // ---- 记忆 ----
+  memories: (): Promise<MemoryFact[]> => j('GET', '/api/memories'),
+  clearMemories: (): Promise<{ ok: boolean }> => j('DELETE', '/api/memories'),
 
-  documents: (course?: string, docType?: string): Promise<DocItem[]> => {
-    const p = new URLSearchParams()
-    if (course) p.set('course', course)
-    if (docType) p.set('doc_type', docType)
-    return j('GET', `/api/documents?${p.toString()}`)
-  },
-  courses: (): Promise<string[]> => j('GET', '/api/courses'),
+  // ---- 文档库 ----
+  documents: (): Promise<DocItem[]> => j('GET', '/api/documents'),
+  allTags: (): Promise<string[]> => j('GET', '/api/tags'),
   deleteDocument: (name: string): Promise<{ ok: boolean }> =>
     j('DELETE', `/api/documents/${encodeURIComponent(name)}`),
+  addDocTag: (name: string, tag: string): Promise<{ ok: boolean; tags: string[] }> =>
+    j('POST', `/api/documents/${encodeURIComponent(name)}/tags`, { tag }),
+  removeDocTag: (name: string, tag: string): Promise<{ ok: boolean; tags: string[] }> =>
+    j('DELETE', `/api/documents/${encodeURIComponent(name)}/tags/${encodeURIComponent(tag)}`),
 
-  upload: async (
-    files: File[],
-    course: string,
-    docType: string,
-  ): Promise<{ results: UploadResult[] }> => {
+  upload: async (files: File[], tags: string[]): Promise<{ results: UploadResult[] }> => {
     const fd = new FormData()
     files.forEach((f) => fd.append('files', f))
-    fd.append('course', course)
-    fd.append('doc_type', docType)
-    const res = await fetch('/api/upload', { method: 'POST', body: fd })
+    fd.append('tags', tags.join(','))
+    const res = await fetch('/api/upload', { method: 'POST', headers: headers(), body: fd })
+    if (!res.ok) throw new Error(`upload -> ${res.status}`)
     return res.json()
+  },
+
+  download: async (name: string): Promise<void> => {
+    const res = await fetch(`/api/documents/${encodeURIComponent(name)}/download`, {
+      headers: headers(),
+    })
+    if (!res.ok) throw new Error('下载失败')
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = name
+    a.click()
+    URL.revokeObjectURL(url)
   },
 
   openFile: (path: string): Promise<{ ok: boolean; message: string }> =>
@@ -69,8 +104,7 @@ export const api = {
 export interface ChatStreamPayload {
   session_id: string
   question: string
-  role: string
-  user_id: string
+  tags: string[]
   use_memory: boolean
 }
 
@@ -83,7 +117,7 @@ export interface ChatStreamHandlers {
 export function chatStream(payload: ChatStreamPayload, handlers: ChatStreamHandlers): void {
   fetch('/api/chat', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: headers(payload),
     body: JSON.stringify(payload),
   })
     .then((res) => {
@@ -109,7 +143,7 @@ export function chatStream(payload: ChatStreamPayload, handlers: ChatStreamHandl
                   try {
                     handlers.onEvent?.(JSON.parse(line.slice(6)) as SSEEvent)
                   } catch {
-                    /* 忽略解析失败帧 */
+                    /* ignore */
                   }
                 }
               }
@@ -123,5 +157,4 @@ export function chatStream(payload: ChatStreamPayload, handlers: ChatStreamHandl
     .catch((e: Error) => handlers.onError?.(e))
 }
 
-// 供 UI 使用的类型再导出
-export type { CheckStatus, ChatMessage, SourceItem }
+export type { ChatMessage, CheckStatus, SourceItem }

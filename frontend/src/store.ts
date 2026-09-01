@@ -1,65 +1,61 @@
 // 全局状态（zustand）
 import { create } from 'zustand'
-import { api, chatStream } from './api'
+import { api, chatStream, setToken } from './api'
 import type {
   ChatMessage,
   CheckStatus,
   DocItem,
   MemoryFact,
-  ProfileItem,
-  Role,
   Session,
   SourceItem,
-  StatItem,
+  User,
 } from './types'
 
-export const STUDENTS = ['张三', '李四', '王五']
-
-interface DocFilter {
-  course?: string
-  docType?: string
-}
-
 interface AppState {
-  role: Role
-  studentName: string
+  // 认证
+  user: User | null
 
+  // 会话
   sessions: Session[]
   currentSessionId: string | null
   messages: ChatMessage[]
 
+  // 问答
   sources: SourceItem[]
   checks: Record<number, CheckStatus>
   streaming: boolean
   inputText: string
+  allTags: string[]
+  selectedTags: string[]
 
-  profile: ProfileItem[]
-  memories: MemoryFact[]
-  stats: StatItem[]
+  // 文档库
   docs: DocItem[]
-  courses: string[]
-  docFilter: DocFilter
+  memories: MemoryFact[]
 
-  setRole: (r: Role) => void
-  setStudentName: (n: string) => void
+  // actions
+  login: (username: string, password: string) => Promise<void>
+  register: (username: string, password: string, role: string) => Promise<void>
+  logout: () => void
+
   loadSessions: () => Promise<void>
   newSession: () => Promise<void>
   switchSession: (sid: string) => Promise<void>
   deleteSession: (sid: string) => Promise<void>
   send: (question: string) => Promise<void>
 
-  loadProfile: () => Promise<void>
-  loadStats: () => Promise<void>
   loadDocs: () => Promise<void>
-  setDocFilter: (course?: string, docType?: string) => void
-  upload: (files: File[], course: string, docType: string) => Promise<{ results: { ok: boolean }[] }>
+  loadTags: () => Promise<void>
+  setSelectedTags: (tags: string[]) => void
+  upload: (files: File[], tags: string[]) => Promise<{ results: { ok: boolean }[] }>
   deleteDoc: (name: string) => Promise<void>
+  addDocTag: (name: string, tag: string) => Promise<void>
+  removeDocTag: (name: string, tag: string) => Promise<void>
+
   clearChat: () => void
 }
 
 export const useStore = create<AppState>((set, get) => ({
-  role: 'student',
-  studentName: '张三',
+  user: null,
 
   sessions: [],
   currentSessionId: null,
@@ -69,30 +65,49 @@ export const useStore = create<AppState>((set, get) => ({
   checks: {},
   streaming: false,
   inputText: '',
+  allTags: [],
+  selectedTags: [],
 
-  profile: [],
-  memories: [],
-  stats: [],
   docs: [],
-  courses: [],
-  docFilter: {},
+  memories: [],
 
-  async setRole(r) {
-    set({ role: r, currentSessionId: null, messages: [], sources: [], checks: {} })
+  // ---------- 认证 ----------
+  async login(username, password) {
+    const r = await api.login(username, password)
+    setToken(r.token)
+    set({ user: { username: r.username, role: r.role as 'user' | 'admin' } })
     await get().loadSessions()
-    if (r === 'teacher') get().loadStats()
-    if (r === 'student') get().loadProfile()
+    get().loadDocs()
+    get().loadTags()
   },
 
-  async setStudentName(n) {
-    set({ studentName: n, currentSessionId: null, messages: [], sources: [], checks: {} })
-    await get().loadSessions()
-    get().loadProfile()
+  async register(username, password, role) {
+    await api.register(username, password, role)
+    await get().login(username, password)
   },
 
+  async logout() {
+    try {
+      await api.logout()
+    } catch {
+      /* ignore */
+    }
+    setToken(null)
+    set({
+      user: null,
+      sessions: [],
+      currentSessionId: null,
+      messages: [],
+      sources: [],
+      checks: {},
+      docs: [],
+      memories: [],
+    })
+  },
+
+  // ---------- 会话 ----------
   async loadSessions() {
-    const { role } = get()
-    const sessions = await api.sessions(role)
+    const sessions = await api.sessions()
     set({ sessions })
     if (!get().currentSessionId && sessions.length) {
       get().switchSession(sessions[0].id)
@@ -100,8 +115,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   async newSession() {
-    const { role } = get()
-    const { session_id } = await api.newSession(role)
+    const { session_id } = await api.newSession()
     set({ currentSessionId: session_id, messages: [], sources: [], checks: {} })
     get().loadSessions()
   },
@@ -117,9 +131,10 @@ export const useStore = create<AppState>((set, get) => ({
     get().loadSessions()
   },
 
+  // ---------- 问答 ----------
   async send(question) {
     if (get().streaming || !question.trim()) return
-    const { role, studentName, currentSessionId } = get()
+    const { currentSessionId, selectedTags } = get()
     set({
       streaming: true,
       messages: [...get().messages, { role: 'user', content: question }],
@@ -132,8 +147,7 @@ export const useStore = create<AppState>((set, get) => ({
       {
         session_id: currentSessionId || '',
         question,
-        role,
-        user_id: role === 'teacher' ? 'tea' : studentName,
+        tags: selectedTags,
         use_memory: true,
       },
       {
@@ -166,7 +180,6 @@ export const useStore = create<AppState>((set, get) => ({
         onDone() {
           set({ streaming: false })
           get().loadSessions()
-          if (get().role === 'student') get().loadProfile()
         },
         onError(e) {
           const messages = get().messages.slice()
@@ -180,38 +193,44 @@ export const useStore = create<AppState>((set, get) => ({
     )
   },
 
-  async loadProfile() {
-    const profile = await api.profile(get().studentName)
-    const memories = await api.memories(get().studentName)
-    set({ profile, memories })
-  },
-
-  async loadStats() {
-    const stats = await api.stats()
-    set({ stats })
-  },
-
+  // ---------- 文档库 ----------
   async loadDocs() {
-    const { docFilter } = get()
-    const docs = await api.documents(docFilter.course, docFilter.docType)
-    const courses = await api.courses()
-    set({ docs, courses })
+    const docs = await api.documents()
+    set({ docs })
   },
 
-  setDocFilter(course, docType) {
-    set({ docFilter: { course, docType } })
-    get().loadDocs()
+  async loadTags() {
+    const allTags = await api.allTags()
+    set({ allTags })
   },
 
-  async upload(files, course, docType) {
-    const res = await api.upload(files, course, docType)
+  setSelectedTags(tags) {
+    set({ selectedTags: tags })
+  },
+
+  async upload(files, tags) {
+    const res = await api.upload(files, tags)
     get().loadDocs()
+    get().loadTags()
     return res
   },
 
   async deleteDoc(name) {
     await api.deleteDocument(name)
     get().loadDocs()
+    get().loadTags()
+  },
+
+  async addDocTag(name, tag) {
+    await api.addDocTag(name, tag)
+    get().loadDocs()
+    get().loadTags()
+  },
+
+  async removeDocTag(name, tag) {
+    await api.removeDocTag(name, tag)
+    get().loadDocs()
+    get().loadTags()
   },
 
   clearChat() {

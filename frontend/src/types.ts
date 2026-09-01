@@ -1,6 +1,11 @@
 // ============ 共享类型定义 ============
 
-export type Role = 'student' | 'teacher'
+export type UserRole = 'user' | 'admin'
+
+export interface User {
+  username: string
+  role: UserRole
+}
 
 export interface Session {
   id: string
@@ -28,8 +33,10 @@ export interface DocItem {
   source: string
   chunks: number
   indexed_at: number
-  course: string
-  doc_type: string
+  tags: string[]
+  tenant: string
+  lifecycle: string
+  owner: string
 }
 
 export interface MemoryFact {
@@ -37,24 +44,12 @@ export interface MemoryFact {
   meta: { type: string; subject: string; user_id?: string }
 }
 
-export interface ProfileItem {
-  type: string
-  subject: string
-  content: string
-}
-
-export interface StatItem {
-  subject: string
-  content: string
-  count: number
-  students: number
-}
-
 export interface UploadResult {
   name: string
   doc?: string
   chunks?: number
   mode?: string
+  tags?: string[]
   ok: boolean
   error?: string
 }

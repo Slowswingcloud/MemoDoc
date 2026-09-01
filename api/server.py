@@ -1,7 +1,9 @@
-"""MemoDoc 学习助手 — FastAPI 后端服务（React 前端消费）。
+"""MemoDoc — FastAPI 后端服务（React 前端消费）。
 
-只调用现有 pipeline / 服务的公开接口；RAG 与 Memory 核心逻辑未做任何修改。
-提供：会话 / SSE 流式问答 / 引用核查 / 文档库分类 / 上传 / 学习画像 / 班级统计 / 打开源文件。
+角色体系：user / admin（注册登录鉴权）。
+能力：会话 / SSE 流式问答（支持检索标签过滤）/ 文档库（全员查看、上传者或管理员可删、
+标签增删、下载）/ 打开源文件 / 管理员查看所有用户。
+核心 RAG / Memory（src/）零改动；本层只做鉴权与透传。
 """
 from __future__ import annotations
 
@@ -11,28 +13,29 @@ import time
 import uuid
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from memodoc.config import settings
 from memodoc.pipeline import Pipeline
 
-from .services import DocService, LearningService
+from .auth import auth
+from .services import DocService
 
 pipe = Pipeline()
 docs_svc = DocService(pipe)
-learn_svc = LearningService(pipe)
 
 UPLOAD_DIR = settings.data_dir / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 FRONTEND_DIST = Path(__file__).resolve().parents[1] / "frontend" / "dist"
 
-ROLE_PREFIX = {"student": "stu", "teacher": "tea"}
+# 首次启动自动创建默认管理员 admin/admin123（若一个账号都没有）
+auth.ensure_admin()
 
-app = FastAPI(title="MemoDoc 学习助手 API")
+app = FastAPI(title="MemoDoc 文档问答 API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -41,57 +44,106 @@ app.add_middleware(
 )
 
 
-def _user_id(role: str, name: str | None = None) -> str:
-    if role == "teacher":
-        return "tea"
-    return (name or "student").strip() or "student"
+# ================= 鉴权依赖 =================
+def get_current_user(authorization: str = Header(default="")) -> dict:
+    token = authorization.removeprefix("Bearer ").strip()
+    user = auth.get_user(token)
+    if not user:
+        raise HTTPException(status_code=401, detail="未登录或登录已过期")
+    return user
 
 
-# ================= 会话 =================
+def require_admin(user: dict = Depends(get_current_user)) -> dict:
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="需要管理员权限")
+    return user
+
+
+# ================= 认证 =================
+@app.post("/api/auth/register")
+def register(payload: dict):
+    try:
+        return auth.register(
+            payload.get("username", ""), payload.get("password", ""), payload.get("role", "user")
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/auth/login")
+def login(payload: dict):
+    try:
+        return auth.login(payload.get("username", ""), payload.get("password", ""))
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+@app.post("/api/auth/logout")
+def logout(payload: dict, user: dict = Depends(get_current_user)):
+    auth.logout(payload.get("token", ""))
+    return {"ok": True}
+
+
+@app.get("/api/me")
+def me(user: dict = Depends(get_current_user)):
+    return user
+
+
+@app.get("/api/users")
+def list_users(_: dict = Depends(require_admin)):
+    return auth.list_users()
+
+
+# ================= 会话（按用户隔离） =================
 @app.get("/api/sessions")
-def list_sessions(role: str = "student"):
-    prefix = ROLE_PREFIX.get(role, "stu") + "_"
+def list_sessions(user: dict = Depends(get_current_user)):
+    prefix = user["username"] + "_"
     return [s for s in pipe.sessions.list_sessions() if s["id"].startswith(prefix)]
 
 
 @app.post("/api/sessions")
-def new_session(role: str = "student"):
-    sid = f"{ROLE_PREFIX.get(role, 'stu')}_{uuid.uuid4().hex[:8]}"
+def new_session(user: dict = Depends(get_current_user)):
+    sid = f"{user['username']}_{uuid.uuid4().hex[:8]}"
     return {"session_id": sid}
 
 
 @app.get("/api/sessions/{sid}")
-def get_session(sid: str):
+def get_session(sid: str, _: dict = Depends(get_current_user)):
     return {"messages": pipe.sessions.all(sid)}
 
 
 @app.delete("/api/sessions/{sid}")
-def delete_session(sid: str):
+def delete_session(sid: str, _: dict = Depends(get_current_user)):
     pipe.sessions.delete(sid)
     return {"ok": True}
 
 
-# ================= 聊天（SSE 流式） =================
+# ================= 聊天（SSE 流式，支持标签过滤） =================
 class ChatRequest(BaseModel):
     session_id: str = ""
     question: str
-    role: str = "student"
-    user_id: str = "student"
+    tags: list[str] = []
     use_memory: bool = True
 
 
 @app.post("/api/chat")
-def chat(req: ChatRequest):
+def chat(req: ChatRequest, user: dict = Depends(get_current_user)):
     def gen():
         def emit(obj: dict):
             yield f"data: {json.dumps(obj, ensure_ascii=False)}\n\n"
 
         try:
-            uid = _user_id(req.role, req.user_id)
-            sid = req.session_id or f"{ROLE_PREFIX.get(req.role, 'stu')}_{uuid.uuid4().hex[:8]}"
+            username = user["username"]
+            sid = req.session_id or f"{username}_{uuid.uuid4().hex[:8]}"
             full = ""
             retrieved = []
-            for delta, chunks in pipe.answer_stream(sid, req.question, use_memory=req.use_memory, user_id=uid):
+            for delta, chunks in pipe.answer_stream(
+                sid,
+                req.question,
+                use_memory=req.use_memory,
+                user_id=username,
+                tags=req.tags or None,
+            ):
                 if not retrieved:
                     yield from emit(
                         {
@@ -112,11 +164,10 @@ def chat(req: ChatRequest):
                 full += delta
                 yield from emit({"type": "delta", "text": delta})
 
-            # 引用核查 + 学习画像抽取
             checks = pipe.check_citations(full, retrieved) if retrieved else {}
-            yield from emit({"type": "checks", "items": [{"index": n, "status": s} for n, s in checks.items()]})
-            if req.role == "student":
-                learn_svc.extract(req.question, full, uid)
+            yield from emit(
+                {"type": "checks", "items": [{"index": n, "status": s} for n, s in checks.items()]}
+            )
             yield from emit({"type": "done", "session_id": sid})
         except Exception as e:  # noqa: BLE001
             yield from emit({"type": "error", "message": str(e)})
@@ -125,45 +176,43 @@ def chat(req: ChatRequest):
     return StreamingResponse(gen(), media_type="text/event-stream")
 
 
-# ================= 记忆 / 学习画像 / 班级统计 =================
+# ================= 记忆（按用户隔离） =================
 @app.get("/api/memories")
-def memories(user_id: str = "student"):
-    return pipe.list_memories(user_id)
+def memories(user: dict = Depends(get_current_user)):
+    return pipe.list_memories(user["username"])
 
 
 @app.delete("/api/memories")
-def clear_memories(user_id: str = "student"):
-    pipe.clear_memories(user_id)
+def clear_memories(user: dict = Depends(get_current_user)):
+    pipe.clear_memories(user["username"])
     return {"ok": True}
 
 
-@app.get("/api/profile")
-def profile(user_id: str = "student"):
-    return learn_svc.profile(user_id)
-
-
-@app.get("/api/stats")
-def stats():
-    return learn_svc.class_stats()
-
-
 # ================= 文档库 =================
+def _find_doc(name: str) -> dict:
+    d = next((x for x in docs_svc.list() if x["name"] == name), None)
+    if not d:
+        raise HTTPException(status_code=404, detail="文档不存在")
+    return d
+
+
 @app.get("/api/documents")
-def documents(course: str | None = None, doc_type: str | None = None):
-    return docs_svc.list(course, doc_type)
+def documents(_: dict = Depends(get_current_user)):
+    return docs_svc.list()
 
 
-@app.get("/api/courses")
-def courses():
-    return docs_svc.courses()
+@app.get("/api/tags")
+def all_tags(_: dict = Depends(get_current_user)):
+    return pipe.all_tags()
 
 
 @app.post("/api/upload")
 async def upload(
     files: list[UploadFile],
-    course: str = Form("默认课程"),
-    doc_type: str = Form("课件"),
+    tags: str = Form(""),
+    user: dict = Depends(get_current_user),
 ):
+    tag_list = [t.strip() for t in tags.split(",") if t.strip()]
     results = []
     for f in files:
         name = Path(f.filename or "unnamed").name
@@ -173,24 +222,64 @@ async def upload(
         try:
             content = await f.read()
             dest.write_bytes(content)
-            r = pipe.index(str(dest))
-            docs_svc.upsert(r["doc"], str(dest), course, doc_type, r["chunks"])
-            results.append({"name": name, "doc": r["doc"], "chunks": r["chunks"], "mode": r["mode"], "ok": True})
+            r = pipe.index(str(dest), tags=tag_list or None)  # tags 为空时核心自动打标签
+            docs_svc.upsert(r["doc"], str(dest), user["username"])
+            results.append(
+                {
+                    "name": name,
+                    "doc": r["doc"],
+                    "chunks": r["chunks"],
+                    "mode": r["mode"],
+                    "tags": r.get("tags", []),
+                    "ok": True,
+                }
+            )
         except Exception as e:  # noqa: BLE001
             results.append({"name": name, "ok": False, "error": str(e)})
     return {"results": results}
 
 
 @app.delete("/api/documents/{name}")
-def delete_doc(name: str):
+def delete_doc(name: str, user: dict = Depends(get_current_user)):
+    d = _find_doc(name)
+    if user["role"] != "admin" and d.get("owner") != user["username"]:
+        raise HTTPException(status_code=403, detail="仅上传者或管理员可删除")
     pipe.delete_doc(name)
     docs_svc.remove(name)
     return {"ok": True}
 
 
-# ================= 打开源文件（点击引用行 → 系统默认程序） =================
+# 标签：新增 / 删除
+@app.post("/api/documents/{name}/tags")
+def add_doc_tag(name: str, payload: dict, _: dict = Depends(get_current_user)):
+    tag = (payload.get("tag") or "").strip()
+    if not tag:
+        raise HTTPException(status_code=400, detail="标签不能为空")
+    _find_doc(name)
+    pipe.add_doc_tag(name, tag)
+    return {"ok": True, "tags": pipe.all_tags()}
+
+
+@app.delete("/api/documents/{name}/tags/{tag}")
+def remove_doc_tag(name: str, tag: str, _: dict = Depends(get_current_user)):
+    _find_doc(name)
+    pipe.remove_doc_tag(name, tag)
+    return {"ok": True, "tags": pipe.all_tags()}
+
+
+# 下载源文件
+@app.get("/api/documents/{name}/download")
+def download_doc(name: str, _: dict = Depends(get_current_user)):
+    d = _find_doc(name)
+    p = Path(d["source"])
+    if not p.exists():
+        raise HTTPException(status_code=404, detail="源文件不存在")
+    return FileResponse(str(p), filename=p.name)
+
+
+# 打开源文件（点击引用行 → 系统默认程序）
 @app.post("/api/open-file")
-def open_file(payload: dict):
+def open_file(payload: dict, _: dict = Depends(get_current_user)):
     path = payload.get("path", "")
     try:
         p = Path(path).resolve()

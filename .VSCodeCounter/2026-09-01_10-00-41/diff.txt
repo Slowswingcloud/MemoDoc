@@ -1,0 +1,81 @@
+Date : 2026-09-01 10:00:41
+Directory : c:\Users\25580\Desktop\handfree
+Total : 35 files,  5391 codes, 104 comments, 452 blanks, all 5947 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| JSON               |          3 |      2,889 |          0 |          3 |      2,892 |
+| TypeScript JSX     |          9 |        666 |          3 |         54 |        723 |
+| Python             |         10 |        503 |         68 |        141 |        712 |
+| Markdown           |          5 |        464 |          0 |        126 |        590 |
+| PostCSS            |          1 |        431 |         11 |         67 |        509 |
+| TypeScript         |          4 |        403 |         21 |         58 |        482 |
+| JSON with Comments |          1 |         19 |          0 |          1 |         20 |
+| HTML               |          1 |         12 |          0 |          1 |         13 |
+| Batch              |          1 |          4 |          1 |          1 |          6 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                     | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                        |         35 |      5,391 |        104 |        452 |      5,947 |
+| . (Files)                                                                |          3 |         33 |          7 |          7 |         47 |
+| api                                                                      |          4 |        351 |         31 |         93 |        475 |
+| data                                                                     |          1 |         68 |          0 |         27 |         95 |
+| data\uploads                                                             |          1 |         68 |          0 |         27 |         95 |
+| docs                                                                     |          2 |        323 |          0 |         83 |        406 |
+| frontend                                                                 |         20 |      4,467 |         35 |        196 |      4,698 |
+| frontend (Files)                                                         |          7 |      2,982 |          0 |         19 |      3,001 |
+| frontend\src                                                             |         13 |      1,485 |         35 |        177 |      1,697 |
+| frontend\src (Files)                                                     |          6 |        913 |         32 |        132 |      1,077 |
+| frontend\src\components                                                  |          7 |        572 |          3 |         45 |        620 |
+| scripts                                                                  |          4 |        145 |         27 |         46 |        218 |
+| src                                                                      |          1 |          4 |          4 |          0 |          8 |
+| src\memodoc                                                              |          1 |          4 |          4 |          0 |          8 |
+| src\memodoc\rag                                                          |          1 |          4 |          4 |          0 |          8 |
++--------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                 | language           | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| c:\Users\25580\Desktop\handfree\README.md                                | Markdown           |         26 |          0 |          4 |         30 |
+| c:\Users\25580\Desktop\handfree\api\__init__.py                          | Python             |          0 |          0 |          1 |          1 |
+| c:\Users\25580\Desktop\handfree\api\auth.py                              | Python             |         82 |          7 |         18 |        107 |
+| c:\Users\25580\Desktop\handfree\api\server.py                            | Python             |        221 |         18 |         62 |        301 |
+| c:\Users\25580\Desktop\handfree\api\services.py                          | Python             |         48 |          6 |         12 |         66 |
+| c:\Users\25580\Desktop\handfree\data\uploads\demo_doc.md                 | Markdown           |         68 |          0 |         27 |         95 |
+| c:\Users\25580\Desktop\handfree\docs\DESIGN_SPEC.md                      | Markdown           |        249 |          0 |         52 |        301 |
+| c:\Users\25580\Desktop\handfree\docs\PRODUCT_PLAN.md                     | Markdown           |         74 |          0 |         31 |        105 |
+| c:\Users\25580\Desktop\handfree\frontend\README.md                       | Markdown           |         47 |          0 |         12 |         59 |
+| c:\Users\25580\Desktop\handfree\frontend\index.html                      | HTML               |         12 |          0 |          1 |         13 |
+| c:\Users\25580\Desktop\handfree\frontend\package-lock.json               | JSON               |      2,852 |          0 |          1 |      2,853 |
+| c:\Users\25580\Desktop\handfree\frontend\package.json                    | JSON               |         26 |          0 |          1 |         27 |
+| c:\Users\25580\Desktop\handfree\frontend\src\App.tsx                     | TypeScript JSX     |         74 |          0 |          7 |         81 |
+| c:\Users\25580\Desktop\handfree\frontend\src\api.ts                      | TypeScript         |        138 |          8 |         15 |        161 |
+| c:\Users\25580\Desktop\handfree\frontend\src\components\AdminUsers.tsx   | TypeScript JSX     |         39 |          0 |          6 |         45 |
+| c:\Users\25580\Desktop\handfree\frontend\src\components\AuthPage.tsx     | TypeScript JSX     |         83 |          0 |          4 |         87 |
+| c:\Users\25580\Desktop\handfree\frontend\src\components\ChatPanel.tsx    | TypeScript JSX     |         95 |          1 |          9 |        105 |
+| c:\Users\25580\Desktop\handfree\frontend\src\components\DocLibrary.tsx   | TypeScript JSX     |        197 |          1 |         12 |        210 |
+| c:\Users\25580\Desktop\handfree\frontend\src\components\MessageItem.tsx  | TypeScript JSX     |         64 |          1 |          7 |         72 |
+| c:\Users\25580\Desktop\handfree\frontend\src\components\Sidebar.tsx      | TypeScript JSX     |         53 |          0 |          4 |         57 |
+| c:\Users\25580\Desktop\handfree\frontend\src\components\SourcesPanel.tsx | TypeScript JSX     |         41 |          0 |          3 |         44 |
+| c:\Users\25580\Desktop\handfree\frontend\src\main.tsx                    | TypeScript JSX     |         20 |          0 |          2 |         22 |
+| c:\Users\25580\Desktop\handfree\frontend\src\store.ts                    | TypeScript         |        199 |         11 |         30 |        240 |
+| c:\Users\25580\Desktop\handfree\frontend\src\styles.css                  | PostCSS            |        431 |         11 |         67 |        509 |
+| c:\Users\25580\Desktop\handfree\frontend\src\types.ts                    | TypeScript         |         51 |          2 |         11 |         64 |
+| c:\Users\25580\Desktop\handfree\frontend\tsconfig.json                   | JSON with Comments |         19 |          0 |          1 |         20 |
+| c:\Users\25580\Desktop\handfree\frontend\tsconfig.node.json              | JSON               |         11 |          0 |          1 |         12 |
+| c:\Users\25580\Desktop\handfree\frontend\vite.config.ts                  | TypeScript         |         15 |          0 |          2 |         17 |
+| c:\Users\25580\Desktop\handfree\scripts\test_api.py                      | Python             |         17 |          5 |          8 |         30 |
+| c:\Users\25580\Desktop\handfree\scripts\test_auth.py                     | Python             |         51 |         11 |         17 |         79 |
+| c:\Users\25580\Desktop\handfree\scripts\test_auth_tc.py                  | Python             |         38 |         10 |         17 |         65 |
+| c:\Users\25580\Desktop\handfree\scripts\test_sse.py                      | Python             |         39 |          1 |          4 |         44 |
+| c:\Users\25580\Desktop\handfree\server.py                                | Python             |          3 |          6 |          2 |         11 |
+| c:\Users\25580\Desktop\handfree\src\memodoc\rag\chunker.py               | Python             |          4 |          4 |          0 |          8 |
+| c:\Users\25580\Desktop\handfree\start.bat                                | Batch              |          4 |          1 |          1 |          6 |
+| Total                                                                    |                    |      5,391 |        104 |        452 |      5,947 |
++--------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

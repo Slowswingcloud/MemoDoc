@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Button, Input, Tooltip } from 'antd'
+import { Button, Input, Select, Tooltip } from 'antd'
 import { SendOutlined, ClearOutlined } from '@ant-design/icons'
 import { useStore } from '../store'
 import MessageItem from './MessageItem'
@@ -12,7 +12,15 @@ export default function ChatPanel() {
   const inputText = useStore((s) => s.inputText)
   const send = useStore((s) => s.send)
   const clearChat = useStore((s) => s.clearChat)
+  const allTags = useStore((s) => s.allTags)
+  const selectedTags = useStore((s) => s.selectedTags)
+  const setSelectedTags = useStore((s) => s.setSelectedTags)
+  const loadTags = useStore((s) => s.loadTags)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    loadTags()
+  }, [])
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -31,11 +39,9 @@ export default function ChatPanel() {
         {messages.length === 0 && (
           <div className="empty-box">
             <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
-            <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 6 }}>
-              向你的学习助手提问
-            </div>
+            <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 6 }}>向 MemoDoc 提问</div>
             <div style={{ fontSize: 13, marginBottom: 18 }}>
-              基于班级知识库回答，引用可追溯，并记住你的薄弱点
+              基于文件库回答，引用可追溯，跨会话记住你
             </div>
             <div>
               {SUGGESTIONS.map((s) => (
@@ -50,6 +56,22 @@ export default function ChatPanel() {
           <MessageItem key={i} msg={m} streaming={streaming && i === messages.length - 1} />
         ))}
       </div>
+
+      {/* 检索标签过滤 */}
+      {allTags.length > 0 && (
+        <div style={{ padding: '8px 16px 0', background: '#fff' }}>
+          <Select
+            mode="multiple"
+            size="small"
+            style={{ width: '100%' }}
+            placeholder="按标签过滤检索（可选）"
+            value={selectedTags}
+            onChange={setSelectedTags}
+            options={allTags.map((t) => ({ label: `# ${t}`, value: t }))}
+            maxTagCount="responsive"
+          />
+        </div>
+      )}
 
       <div className="chat-input-bar">
         <Input.TextArea

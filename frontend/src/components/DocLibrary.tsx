@@ -3,7 +3,6 @@ import {
   Button,
   Input,
   Popconfirm,
-  Select,
   Space,
   Statistic,
   Table,
@@ -12,25 +11,31 @@ import {
   message,
   type UploadFile,
 } from 'antd'
-import { ReloadOutlined, UploadOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  DownloadOutlined,
+  FolderOpenOutlined,
+  ReloadOutlined,
+  UploadOutlined,
+} from '@ant-design/icons'
 import { useStore } from '../store'
+import { api } from '../api'
 import type { DocItem } from '../types'
 
-const DOC_TYPES = ['课件', '作业题', '往年题', '错题']
-
 export default function DocLibrary() {
+  const user = useStore((s) => s.user)
   const docs = useStore((s) => s.docs)
-  const courses = useStore((s) => s.courses)
-  const docFilter = useStore((s) => s.docFilter)
   const loadDocs = useStore((s) => s.loadDocs)
-  const setDocFilter = useStore((s) => s.setDocFilter)
   const upload = useStore((s) => s.upload)
   const deleteDoc = useStore((s) => s.deleteDoc)
+  const addDocTag = useStore((s) => s.addDocTag)
+  const removeDocTag = useStore((s) => s.removeDocTag)
 
-  const [course, setCourse] = useState('软件工程')
-  const [docType, setDocType] = useState('课件')
   const [fileList, setFileList] = useState<UploadFile[]>([])
+  const [tagInput, setTagInput] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [addingFor, setAddingFor] = useState<string | null>(null)
+  const [newTag, setNewTag] = useState('')
 
   useEffect(() => {
     loadDocs()
@@ -41,38 +46,113 @@ export default function DocLibrary() {
       .map((f) => f.originFileObj)
       .filter((f): f is File => f instanceof File)
     if (!files.length) return message.warning('请先选择文件')
+    const tags = tagInput
+      .split(/[,，]/)
+      .map((t) => t.trim())
+      .filter(Boolean)
     setUploading(true)
-    const { results } = await upload(files, course.trim() || '默认课程', docType)
+    const { results } = await upload(files, tags)
     setUploading(false)
     setFileList([])
+    setTagInput('')
     const ok = results.filter((r) => r.ok).length
     message.success(`上传完成：${ok} 成功，${results.length - ok} 失败`)
+  }
+
+  const canDelete = (doc: DocItem): boolean =>
+    user?.role === 'admin' || doc.owner === user?.username
+
+  const openSource = async (doc: DocItem): Promise<void> => {
+    if (!doc.source) return message.warning('该文档没有源文件路径')
+    const r = await api.openFile(doc.source)
+    r.ok ? message.success(r.message) : message.error(r.message)
+  }
+
+  const download = async (name: string): Promise<void> => {
+    try {
+      await api.download(name)
+      message.success('已开始下载')
+    } catch (e) {
+      message.error((e as Error).message)
+    }
   }
 
   const columns = [
     { title: '文档', dataIndex: 'name', ellipsis: true },
     {
-      title: '课程',
-      dataIndex: 'course',
-      width: 120,
-      render: (v: string) => <Tag color="blue">{v}</Tag>,
+      title: '标签',
+      key: 'tags',
+      render: (_: unknown, doc: DocItem) => (
+        <Space size={4} wrap>
+          {(doc.tags || []).map((t) => (
+            <Tag
+              key={t}
+              closable
+              onClose={(e) => {
+                e.preventDefault()
+                removeDocTag(doc.name, t)
+              }}
+            >
+              {t}
+            </Tag>
+          ))}
+          {addingFor === doc.name ? (
+            <Input
+              size="small"
+              style={{ width: 90 }}
+              autoFocus
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onPressEnter={() => {
+                const t = newTag.trim()
+                if (t) addDocTag(doc.name, t)
+                setAddingFor(null)
+                setNewTag('')
+              }}
+              onBlur={() => {
+                setAddingFor(null)
+                setNewTag('')
+              }}
+            />
+          ) : (
+            <Button
+              size="small"
+              type="text"
+              onClick={() => {
+                setAddingFor(doc.name)
+                setNewTag('')
+              }}
+            >
+              +
+            </Button>
+          )}
+        </Space>
+      ),
     },
     {
-      title: '类型',
-      dataIndex: 'doc_type',
-      width: 90,
-      render: (v: string) => <Tag>{v}</Tag>,
+      title: '上传者',
+      dataIndex: 'owner',
+      width: 100,
+      render: (v: string) => (v ? <Tag>{v}</Tag> : <span style={{ color: '#bbb' }}>—</span>),
     },
     { title: '块数', dataIndex: 'chunks', width: 70, align: 'center' as const },
     {
       title: '操作',
-      width: 90,
-      render: (_: unknown, r: DocItem) => (
-        <Popconfirm title={`删除《${r.name}》？`} onConfirm={() => deleteDoc(r.name)}>
-          <Button danger size="small">
-            删除
+      width: 190,
+      render: (_: unknown, doc: DocItem) => (
+        <Space size={4}>
+          <Button size="small" icon={<DownloadOutlined />} onClick={() => download(doc.name)}>
+            下载
           </Button>
-        </Popconfirm>
+          {doc.source && (
+            <Button size="small" icon={<FolderOpenOutlined />} onClick={() => openSource(doc)} />
+          )}
+          {canDelete(doc) && (
+            <Popconfirm title={`删除《${doc.name}》？`} onConfirm={() => deleteDoc(doc.name)}>
+              <Button size="small" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
+        </Space>
       ),
     },
   ]
@@ -80,7 +160,7 @@ export default function DocLibrary() {
   return (
     <div style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
       <Space direction="vertical" style={{ width: '100%' }} size={16}>
-        {/* 上传区（左上角） */}
+        {/* 上传区 */}
         <div
           style={{
             background: '#fff',
@@ -100,16 +180,10 @@ export default function DocLibrary() {
               <Button icon={<UploadOutlined />}>选择文件（可多选）</Button>
             </Upload>
             <Input
-              style={{ width: 160 }}
-              placeholder="课程名称"
-              value={course}
-              onChange={(e) => setCourse(e.target.value)}
-            />
-            <Select
-              style={{ width: 110 }}
-              value={docType}
-              onChange={setDocType}
-              options={DOC_TYPES.map((t) => ({ label: t, value: t }))}
+              style={{ width: 220 }}
+              placeholder="标签（逗号分隔，留空则自动打标签）"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
             />
             <Button type="primary" loading={uploading} onClick={doUpload}>
               上传并索引
@@ -120,26 +194,7 @@ export default function DocLibrary() {
           </Space>
         </div>
 
-        {/* 过滤 + 统计 */}
-        <Space wrap>
-          <Select
-            allowClear
-            placeholder="按课程过滤"
-            style={{ width: 170 }}
-            value={docFilter.course}
-            onChange={(v) => setDocFilter(v, docFilter.docType)}
-            options={courses.map((c) => ({ label: c, value: c }))}
-          />
-          <Select
-            allowClear
-            placeholder="按类型过滤"
-            style={{ width: 150 }}
-            value={docFilter.docType}
-            onChange={(v) => setDocFilter(docFilter.course, v)}
-            options={DOC_TYPES.map((t) => ({ label: t, value: t }))}
-          />
-          <Statistic title="文档数" value={docs.length} style={{ marginLeft: 12 }} />
-        </Space>
+        <Statistic title="文件总数" value={docs.length} />
 
         <Table
           rowKey="name"
