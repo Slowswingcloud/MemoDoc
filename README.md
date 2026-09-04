@@ -161,6 +161,11 @@ cd ..
 
 - **没有 API Key 能跑吗？** 能。问答生成会提示未配置 key；检索/索引链路不依赖云端 key。建议先 `download-model` 让本地模型就位。
 - **模型下载慢/失败？** 支持断点续传，重跑命令即可续；网络受限请在 `.env` 把 `HF_ENDPOINT` 换成可达镜像。
+- **怎么用 GPU 加速检索/索引？** 默认 torch 是 CPU 版；本机有 NVIDIA 显卡（驱动需支持 CUDA 12.x）时执行一次：
+  ```powershell
+  uv pip install --python .venv\Scripts\python.exe --index-url https://download.pytorch.org/whl/cu128 "torch==2.9.1+cu128"
+  ```
+  然后把 `.env` 的 `EMBED_DEVICE` 改为 `cuda` 并重启。实测（RTX 4060）：embedding 约 5ms/块、重排约 51ms/对，比 CPU 快 20–40 倍。注意：之后若再执行 `uv sync` 会按锁文件把 torch 还原为 CPU 版，需重装上述命令。
 - **想重置演示数据？** 删除 `data/store/users.json`、`data/store/tokens.json` 与 `data/sessions/` 下文件后重启，会自动重建默认管理员。
 - **8080/8000 端口被占？** 修改 `server.py` 中的 `port`。
 
