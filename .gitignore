@@ -14,8 +14,8 @@ data/sessions/
 data/.hf/
 data/models/
 
-# 参考仓库（Kotaemon 源码，只读参考）
-kotaemon-ref/
+# 新版重写工作目录（另行维护，与本提交无关）
+MemoDoc/
 
 # 前端构建产物与依赖
 frontend/node_modules/

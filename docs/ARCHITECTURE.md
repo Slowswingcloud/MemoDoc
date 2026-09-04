@@ -1,5 +1,7 @@
 # MemoDoc 架构说明
 
+> 说明：界面层现以 main 分支的 React + FastAPI 实现为准（`api/`、`frontend/`），本文 RAG/Memory 核心架构与当前实现一致；文中 Gradio 图仅作历史参考。
+
 ## 1. 总架构
 
 ```mermaid

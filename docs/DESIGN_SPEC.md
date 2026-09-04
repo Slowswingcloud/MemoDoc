@@ -1,5 +1,7 @@
 # MemoDoc 学习助手 — 详细设计说明书
 
+> 说明：本文为产品演进设计稿（含 Gradio 版与学习画像/班级统计扩展设想）；main 分支 React 版实际实现了 user/admin + 问答/文件库/用户管理，画像/统计能力为后续演进方向。
+
 - 版本：v1.0
 - 依据：《MemoDoc 学习助手产品方案》（docs/PRODUCT_PLAN.md）、《系统架构说明》（docs/ARCHITECTURE.md）
 - 适用范围：小学期项目开发、答辩演示、后续演进
